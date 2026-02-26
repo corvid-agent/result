@@ -102,6 +102,57 @@ fromNullable(value, "value was null");
 // Ok(value) if non-null, Err("value was null") otherwise
 ```
 
+## Works with @corvid-agent/pipe
+
+`@corvid-agent/result` pairs naturally with [`@corvid-agent/pipe`](https://github.com/corvid-agent/pipe) for railway-oriented programming — pipe a value through a series of transforms, with errors short-circuiting via `Result`.
+
+### Pipe a value through Result transforms
+
+```ts
+import { pipe } from "@corvid-agent/pipe";
+import { trySync } from "@corvid-agent/result";
+
+const items = pipe(
+  '{"items": [1, null, 3]}',
+  (input: string) => trySync(() => JSON.parse(input)),
+  (result) => result.map((data) => data.items),
+  (result) => result.map((items) => items.filter(Boolean)),
+  (result) => result.unwrapOr([]),
+);
+// [1, 3]
+```
+
+### Create reusable pipelines with flow
+
+```ts
+import { flow } from "@corvid-agent/pipe";
+import { trySync } from "@corvid-agent/result";
+
+const parseItems = flow(
+  (input: string) => trySync(() => JSON.parse(input)),
+  (result) => result.map((data) => data.items),
+  (result) => result.map((items) => items.filter(Boolean)),
+  (result) => result.unwrapOr([]),
+);
+
+parseItems('{"items": [1, null, 3]}'); // [1, 3]
+parseItems("not json");                // []
+```
+
+### Async pipelines
+
+```ts
+import { pipeAsync } from "@corvid-agent/pipe";
+import { tryAsync } from "@corvid-agent/result";
+
+const data = await pipeAsync(
+  "https://api.example.com/data",
+  (url: string) => tryAsync(() => fetch(url).then((r) => r.json())),
+  (result) => result.map((json) => json.items),
+  (result) => result.unwrapOr([]),
+);
+```
+
 ## API Reference
 
 | Function | Description |
