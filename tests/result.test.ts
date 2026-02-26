@@ -7,6 +7,7 @@ import {
   all,
   allTuple,
   any,
+  partition,
   fromNullable,
   fromPromise,
 } from "../src/index";
@@ -270,6 +271,38 @@ describe("any", () => {
   test("returns Err for empty array", () => {
     const r = any([]);
     expect(r.ok).toBe(false);
+  });
+});
+
+describe("partition", () => {
+  test("splits mixed Results into successes and failures", () => {
+    const [successes, failures] = partition([ok(1), err("a"), ok(2), err("b")]);
+    expect(successes).toEqual([1, 2]);
+    expect(failures).toEqual(["a", "b"]);
+  });
+
+  test("returns all values when all Ok", () => {
+    const [successes, failures] = partition([ok(1), ok(2), ok(3)]);
+    expect(successes).toEqual([1, 2, 3]);
+    expect(failures).toEqual([]);
+  });
+
+  test("returns all errors when all Err", () => {
+    const [successes, failures] = partition([err("a"), err("b"), err("c")]);
+    expect(successes).toEqual([]);
+    expect(failures).toEqual(["a", "b", "c"]);
+  });
+
+  test("handles empty array", () => {
+    const [successes, failures] = partition([]);
+    expect(successes).toEqual([]);
+    expect(failures).toEqual([]);
+  });
+
+  test("preserves order", () => {
+    const [successes, failures] = partition([ok(3), err("x"), ok(1), err("y"), ok(2)]);
+    expect(successes).toEqual([3, 1, 2]);
+    expect(failures).toEqual(["x", "y"]);
   });
 });
 

@@ -275,6 +275,22 @@ export function any<T, E>(
   return results[results.length - 1];
 }
 
+/**
+ * Split an array of Results into separate arrays of Ok values and Err values.
+ * Useful for batch operations where you want to process successes and report failures separately.
+ */
+export function partition<T, E>(
+  results: readonly Result<T, E>[],
+): [T[], E[]] {
+  const oks: T[] = [];
+  const errs: E[] = [];
+  for (const r of results) {
+    if (r.ok) oks.push(r.value);
+    else errs.push(r.error);
+  }
+  return [oks, errs];
+}
+
 // -- fromNullable / fromPromise ----
 
 /**
