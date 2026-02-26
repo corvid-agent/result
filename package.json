@@ -10,6 +10,7 @@
   "scripts": {
     "build": "tsc",
     "test": "bun test",
+    "postinstall": "cd node_modules/@corvid-agent/pipe && bun run build",
     "prepublishOnly": "bun run build"
   },
   "repository": {
