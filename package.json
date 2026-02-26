@@ -10,6 +10,7 @@
   "scripts": {
     "build": "tsc",
     "test": "bun test",
+    "postinstall": "cd node_modules/@corvid-agent/pipe && bun run build",
     "prepublishOnly": "bun run build"
   },
   "repository": {
@@ -28,6 +29,7 @@
   "author": "corvid-agent",
   "license": "MIT",
   "devDependencies": {
+    "@corvid-agent/pipe": "github:corvid-agent/pipe",
     "@types/bun": "latest",
     "typescript": "^5.3.0"
   },
