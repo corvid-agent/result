@@ -1,0 +1,37 @@
+{
+  "name": "@corvid-agent/result",
+  "version": "1.0.0",
+  "description": "Type-safe error handling with Result<T, E>. Chainable, pipeable, zero-throw. Zero deps. TypeScript-first.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "bun test",
+    "prepublishOnly": "bun run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/corvid-agent/result.git"
+  },
+  "keywords": [
+    "result",
+    "either",
+    "monad",
+    "error-handling",
+    "typescript",
+    "functional",
+    "zero-deps"
+  ],
+  "author": "corvid-agent",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.3.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
+}
