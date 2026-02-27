@@ -66,6 +66,16 @@ export interface ResultMethods<T, E> {
   /** Unwrap the Err value or throw if Ok. */
   unwrapErr(): E;
 
+  /** Execute a side effect on Ok without transforming the value. */
+  tap(fn: (value: T) => void): Result<T, E>;
+  /** Execute a side effect on Err without transforming the error. */
+  tapErr(fn: (error: E) => void): Result<T, E>;
+
+  /** If Err, apply `fn` to produce an Ok value. Ok passes through unchanged. */
+  recover<U>(fn: (error: E) => U): Result<T | U, never>;
+  /** If Err, apply `fn` to produce a new Result. Ok passes through unchanged. */
+  orElse<F>(fn: (error: E) => Result<T, F>): Result<T, F>;
+
   /** Convert to a plain object { ok, value?, error? } for serialization. */
   toJSON(): { ok: true; value: T } | { ok: false; error: E };
 }
@@ -93,6 +103,21 @@ function createOk<T>(value: T): Result<T, never> {
 
     flatMap<U>(fn: (value: T) => Result<U, never>): Result<U, never> {
       return fn(self.value);
+    },
+
+    tap(fn: (value: T) => void) {
+      fn(self.value);
+      return self;
+    },
+    tapErr() {
+      return self;
+    },
+
+    recover() {
+      return self as unknown as Result<T, never>;
+    },
+    orElse() {
+      return self as unknown as Result<T, never>;
     },
 
     match<A, B>(cases: { ok: (value: T) => A; err: (error: never) => B }) {
@@ -141,6 +166,21 @@ function createErr<E>(error: E): Result<never, E> {
 
     flatMap() {
       return self as unknown as Result<never, E>;
+    },
+
+    tap() {
+      return self;
+    },
+    tapErr(fn: (error: E) => void) {
+      fn(self.error);
+      return self;
+    },
+
+    recover<U>(fn: (error: E) => U): Result<U, never> {
+      return createOk(fn(self.error));
+    },
+    orElse<F>(fn: (error: E) => Result<never, F>): Result<never, F> {
+      return fn(self.error);
     },
 
     match<A, B>(cases: { ok: (value: never) => A; err: (error: E) => B }) {

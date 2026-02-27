@@ -346,6 +346,106 @@ describe("fromPromise", () => {
   });
 });
 
+describe("tap", () => {
+  test("calls fn with value on Ok", () => {
+    let captured: number | undefined;
+    const r = ok(42).tap((v) => {
+      captured = v;
+    });
+    expect(captured).toBe(42);
+    expect(r.ok).toBe(true);
+    expect(r.value).toBe(42);
+  });
+
+  test("does not call fn on Err", () => {
+    let called = false;
+    const r = err("fail").tap(() => {
+      called = true;
+    });
+    expect(called).toBe(false);
+    expect(r.ok).toBe(false);
+    expect(r.error).toBe("fail");
+  });
+
+  test("returns the same Result for chaining", () => {
+    const values: number[] = [];
+    const r = ok(10)
+      .tap((v) => values.push(v))
+      .map((x) => x * 2)
+      .tap((v) => values.push(v));
+    expect(r.value).toBe(20);
+    expect(values).toEqual([10, 20]);
+  });
+});
+
+describe("tapErr", () => {
+  test("calls fn with error on Err", () => {
+    let captured: string | undefined;
+    const r = err("fail").tapErr((e) => {
+      captured = e;
+    });
+    expect(captured).toBe("fail");
+    expect(r.ok).toBe(false);
+    expect(r.error).toBe("fail");
+  });
+
+  test("does not call fn on Ok", () => {
+    let called = false;
+    const r = ok(42).tapErr(() => {
+      called = true;
+    });
+    expect(called).toBe(false);
+    expect(r.ok).toBe(true);
+    expect(r.value).toBe(42);
+  });
+});
+
+describe("recover", () => {
+  test("converts Err to Ok using recovery function", () => {
+    const r = err("not found").recover(() => "default");
+    expect(r.ok).toBe(true);
+    expect(r.value).toBe("default");
+  });
+
+  test("passes error to recovery function", () => {
+    const r = err(404).recover((code) => `fallback for ${code}`);
+    expect(r.ok).toBe(true);
+    expect(r.value).toBe("fallback for 404");
+  });
+
+  test("passes Ok through unchanged", () => {
+    const r = ok(42).recover(() => 0);
+    expect(r.ok).toBe(true);
+    expect(r.value).toBe(42);
+  });
+});
+
+describe("orElse", () => {
+  test("chains a new Result on Err", () => {
+    const r = err("timeout").orElse(() => ok("cached"));
+    expect(r.ok).toBe(true);
+    expect(r.value).toBe("cached");
+  });
+
+  test("can return a new Err", () => {
+    const r = err("timeout").orElse((e) => err(`retry failed: ${e}`));
+    expect(r.ok).toBe(false);
+    expect(r.error).toBe("retry failed: timeout");
+  });
+
+  test("passes Ok through unchanged", () => {
+    const r = ok(42).orElse(() => ok(0));
+    expect(r.ok).toBe(true);
+    expect(r.value).toBe(42);
+  });
+
+  test("passes error to the function", () => {
+    const r = err("bad input").orElse((e) => err(e.toUpperCase()));
+    expect(r.ok).toBe(false);
+    expect(r.error).toBe("BAD INPUT");
+  });
+});
+
 describe("chaining", () => {
   test("map chain works end to end", () => {
     const r = ok(10)
